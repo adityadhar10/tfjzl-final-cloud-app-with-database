@@ -95,27 +95,16 @@ class Enrollment(models.Model):
     rating = models.FloatField(default=5.0)
 
 
-# One enrollment could have multiple submission
-# One submission could have multiple choices
-# One choice could belong to multiple submissions
-#class Submission(models.Model):
-#    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
-#    choices = models.ManyToManyField(Choice)
-
 # Question model
-
-    def __str__(self):
-        return f"Submission: {self.id}, Enrollment: {self.enrollment.id}"
-
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    grade = models.IntegerField(default=1)
+    grade = models.IntegerField(default=0)
 
     def is_get_score(self, selected_ids=None):
         correct_ids = set(
             self.choice_set.filter(is_correct=True).values_list(
-                'id', flat=True
+                "id", flat=True
             )
         )
         if selected_ids is None:
@@ -129,7 +118,7 @@ class Question(models.Model):
 # Choice model
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=100)
+    choice_text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
@@ -138,11 +127,8 @@ class Choice(models.Model):
 
 # Submission model
 class Submission(models.Model):
-    enrollment = models.ForeignKey(
-        Enrollment,
-        on_delete=models.CASCADE
-    )
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     choices = models.ManyToManyField(Choice)
 
     def __str__(self):
-        return "Submission: " + str(self.id)
+        return f"Submission: {self.id}, Enrollment: {self.enrollment.id}"
