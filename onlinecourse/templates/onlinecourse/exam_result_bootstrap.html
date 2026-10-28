@@ -2,54 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Exam Results - {{ course.name }}</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-
- <nav class="navbar navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="navbar-header">
-              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
-        </div>
-        <ul class="nav navbar-nav navbar-right">
-            {% if user.is_authenticated %}
-            <li>
-                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
-                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
-            </li>
-            {% else %}
-            <li>
-                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
-                    {% csrf_token %}
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Username" name="username" >
-                        <input type="password" class="form-control" placeholder="Username" name="psw" >
-                        <button class="btn btn-primary" type="submit">Login</button>
-                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
-                    </div>
-                </form>
-            </li>
-            {% endif %}
-        </ul>
-    </div>
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
 </nav>
+<main class="container mt-4">
+    <h2>{{ course.name }}</h2>
+    <h4 class="mt-3">Exam Results</h4>
 
-<div class="container-fluid">
     {% if grade > 80 %}
-    <div class="alert alert-success">
-       <!--HINT Display passed info -->
-    </div>
-        {% else %}
+        <div class="alert alert-success">
+            <strong>Congratulations!</strong> You passed the exam.
+        </div>
+    {% else %}
         <div class="alert alert-danger">
-            <!--HINT Display failed info -->
+            <strong>Keep practicing!</strong> You did not pass this time.
         </div>
-        <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
-        {% endif %}
-        <div class="card-columns-vertical mt-1">
-        <h5 class="">Exam results</h5>
-            <!--HINT Display exam results-->
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Score: {{ score }} / {{ total_score }}</h5>
+            <p class="mb-0">Percentage: {{ grade }}%</p>
         </div>
     </div>
+
+    {% for item in question_results %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Question {{ forloop.counter }}: {{ item.question.question_text }}</strong>
+            </div>
+            <div class="card-body">
+                {% if item.is_correct %}
+                    <p class="text-success">Correct!</p>
+                {% else %}
+                    <p class="text-danger">Incorrect</p>
+                {% endif %}
+
+                <p><strong>Your answer:</strong></p>
+                {% for choice in item.selected_choices %}
+                    <p>{{ choice.choice_text }}</p>
+                {% empty %}
+                    <p>No answer selected.</p>
+                {% endfor %}
+
+                <p><strong>Correct answer:</strong></p>
+                {% for choice in item.correct_choices %}
+                    <p>{{ choice.choice_text }}</p>
+                {% empty %}
+                    <p>No correct answer configured.</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% empty %}
+        <p>No exam questions were found for this course.</p>
+    {% endfor %}
+
+    <a class="btn btn-primary mb-4" href="{% url 'onlinecourse:course_details' course.id %}">Return to Course</a>
+</main>
 </body>
 </html>
